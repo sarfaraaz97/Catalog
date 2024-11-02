@@ -52,5 +52,5 @@ function handleTestCase(filePath) {
     });
 }
 
-handleTestCase('sampletestcase.json');
-handleTestCase('secondtestcase.json');
+handleTestCase('testcase1.json');
+handleTestCase('testcase2.json');
