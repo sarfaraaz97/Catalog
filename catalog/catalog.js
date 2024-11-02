@@ -1,57 +1,56 @@
 const fs = require('fs');
 
-function decodeValue(base, value) {
-    return parseInt(value, base);
+function decodeBaseValue(base, encodedValue) {
+    return parseInt(encodedValue, base);
 }
 
-function lagrangeInterpolation(points) {
-    let totalSum = 0;
+function performLagrangeInterpolation(dataPoints) {
+    let polynomialConstant = 0;
 
-    for (let i = 0; i < points.length; i++) {
-        const [x_i, y_i] = points[i];
-        let product = y_i;
+    for (let i = 0; i < dataPoints.length; i++) {
+        const [xValue, yValue] = dataPoints[i];
+        let termProduct = yValue;
 
-        for (let j = 0; j < points.length; j++) {
+        for (let j = 0; j < dataPoints.length; j++) {
             if (i !== j) {
-                const [x_j] = points[j];
-                product *= (0 - x_j) / (x_i - x_j);
+                const [xOther] = dataPoints[j];
+                termProduct *= (0 - xOther) / (xValue - xOther);
             }
         }
 
-        totalSum += product;
+        polynomialConstant += termProduct;
     }
 
-    return totalSum;
+    return polynomialConstant;
 }
 
-function processTestCase(filePath) {
-    fs.readFile(filePath, 'utf8', (err, data) => {
+function handleTestCase(filePath) {
+    fs.readFile(filePath, 'utf8', (err, fileData) => {
         if (err) {
             console.error("Error reading the file:", err);
             return;
         }
 
-        const jsonData = JSON.parse(data);
-        const k = jsonData.keys.k;
+        const jsonData = JSON.parse(fileData);
+        const requiredPoints = jsonData.keys.k;
 
-        const points = [];
+        const dataPoints = [];
 
-        for (let i = 1; i <= jsonData.keys.n; i++) {
-            const root = jsonData[i.toString()]; 
+        for (let idx = 1; idx <= jsonData.keys.n; idx++) {
+            const root = jsonData[idx.toString()]; 
             if (root) { 
-                const x = i; 
-                const y = decodeValue(root.base, root.value); 
-                points.push([x, y]);
+                const xCoord = idx; 
+                const yCoord = decodeBaseValue(root.base, root.value); 
+                dataPoints.push([xCoord, yCoord]);
             }
         }
 
-        const kPoints = points.slice(0, k);
-        const secretCode = lagrangeInterpolation(kPoints);
+        const selectedPoints = dataPoints.slice(0, requiredPoints);
+        const secretValue = performLagrangeInterpolation(selectedPoints);
 
-        console.log(`The constant term (c) of the polynomial from ${filePath} is:`, secretCode);
+        console.log(`The constant term (c) of the polynomial from ${filePath} is:`, secretValue);
     });
 }
 
-
-processTestCase('sampletestcase.json');
-processTestCase('secondtestcase.json');
+handleTestCase('sampletestcase.json');
+handleTestCase('secondtestcase.json');
